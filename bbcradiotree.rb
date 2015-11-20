@@ -216,10 +216,10 @@ begin
     loop do
         begin
             client = Twitter::REST::Client.new do |config|
-                config.consumer_key        = "NfglD8Fd43QJGVswLAVembEoH"
-                config.consumer_secret     = "VnDdc2eoFANhhc8JAkRfz9MuY6Vkne50xK0cS8gfFeGOVX3aG3"
-                config.access_token        = "2673157242-0nKiUWfSmUnCdjledjc9kDLv1aTD4eMYv2XAzwg"
-                config.access_token_secret = "8qdPHldlqaMtkXmJw76BIoi5pHrJlUJAvZUxUeoCH86PF"
+                config.consumer_key        = "consumer_key"
+                config.consumer_secret     = "consumer_secret"
+                config.access_token        = "access_token"
+                config.access_token_secret = "access_token_secret"
             end
 
             p "Polling twitter: [#{Time.now.to_s}]"
@@ -233,7 +233,7 @@ begin
 
             p "Last updated: #{last_updated}"
 
-            if ((Time.now - last_updated) > 180)    
+            if ((Time.now - last_updated) > 180)
                 update_to_default
             end
 
