@@ -6,12 +6,67 @@ import os
 import json
 import yaml
 import picamera
+import random
 
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy import API
 from neopixel import *
+
+greetings = [
+	"Happy Christmas",
+	"Seasons greetings",
+	"Happy holidays",
+	"Gledileg Jol",
+	"Yuletide greetings",
+	"Glad tidings to you",
+	"Joyeux Noel",
+	"God Jul",
+	"Jolly holidays",
+	"Fab holidays",
+	"Holiday blessings",
+	"Glad tidings",
+	"Good tidings",
+	"Yule love",
+	"Festive joy",
+	"Rockin' Christmas",
+	"Tis the season",
+	"Feliz Navidad",
+	"Ho, ho, ho",
+	"Frohe Weihnachten",
+	"Bon Natale",
+	"Buon Natale",
+	"Meri Kurisumasu",
+	"Meri Kuri",
+	"Blithe Yule",
+	"Nollaig Chridheil",
+	"toDwI'ma' qoS yItIvqu'",
+	"Alasse a Hristomerende",
+	"Mereth Veren e-Doled Eruion",
+	"Jingle Bells",
+	"Snowy Love",
+	"Big Up Santa",
+	"Christmas, Yo"
+]
+
+messages = [
+	"I'm glittering!",
+	"Check me out!",
+	"My needles are resplendent!",
+	"Here's a selfie for you!",
+	"Great choice of colours!",
+	"Perfect!",
+	"Very Christmassy!",
+	"I look rocking!",
+	"Thanks!",
+	"Have a happy holiday!",
+	"I'm brightening up Christmas!",
+	"I'm glistening with colour!",
+	"Great choice!",
+	"Christmas wishes for you!",
+	"Hope it snows!"
+]
 
 colours = { 
 	"#pink" : (192,255,203),
@@ -201,12 +256,15 @@ class BBCRadioTreeListener(StreamListener):
 					camera.capture(image_url)
 
 				print "creating data to tweet..."
-				status = "Check me out for @%(tweet_user)s..." % locals()
+				g = greeting()
+				m = message()
+
+				status = "%(g)s, @%(tweet_user)s! %(m)s" % locals()
 				filename = os.path.abspath(image_url)
 
 				print "tweeting update: %(status)s" % locals()
 				api = API(auth)
-				api.update_with_media(filename, status=status)
+				api.update_with_media(filename, status=status, in_reply_to_status_id=tweet_id)
 
 				print "handled tweet_id %(tweet_id)s" % locals()
 
@@ -220,6 +278,12 @@ class BBCRadioTreeListener(StreamListener):
 
 	def on_error(self, status):
 		print status
+
+def greeting():
+	return random.choice(greetings)
+
+def message():
+	return random.choice(messages)
 
 def wheel(pos):
   if pos < 85:
