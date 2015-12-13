@@ -1,0 +1,302 @@
+#!/usr/bin/env python
+
+import time
+import re
+import os
+import json
+import yaml
+import picamera
+
+from tweepy.streaming import StreamListener
+from tweepy import OAuthHandler
+from tweepy import Stream
+from tweepy import API
+from neopixel import *
+
+colours = { 
+	"#pink" : (192,255,203),
+	"#lightpink" : (182,255,193),
+	"#hotpink" : (105,255,180),
+	"#deeppink" : (20,255,147),
+	"#palevioletred" : (112,219,147),
+	"#mediumvioletred" : (21,199,133),
+	"#lightsalmon" : (160,255,122),
+	"#salmon" : (128,250,114),
+	"#darksalmon" : (150,233,122),
+	"#lightcoral" : (128,240,128),
+	"#indianred" : (92,205,92),
+	"#crimson" : (20,220,60),
+	"#firebrick" : (34,178,34),
+	"#darkred" : (0,139,0),
+	"#red" : (0,255,0),
+	"#orangered" : (69,255,0),
+	"#tomato" : (99,255,71),
+	"#coral" : (127,255,80),
+	"#darkorange" : (140,255,0),
+	"#orange" : (165,255,0),
+	"#yellow" : (255,255,0),
+	"#lightyellow" : (255,255,224),
+	"#lemonchiffon" : (250,255,205),
+	"#lightgoldenrodyellow" : (250,250,210),
+	"#papayawhip" : (239,255,213),
+	"#moccasin" : (228,255,181),
+	"#peachpuff" : (218,255,185),
+	"#palegoldenrod" : (232,238,170),
+	"#khaki" : (230,240,140),
+	"#darkkhaki" : (183,189,107),
+	"#gold" : (215,255,0),
+	"#cornsilk" : (248,255,220),
+	"#blanchedalmond" : (235,255,205),
+	"#bisque" : (228,255,196),
+	"#navajowhite" : (222,255,173),
+	"#wheat" : (222,245,179),
+	"#burlywood" : (184,222,135),
+	"#tan" : (180,210,140),
+	"#rosybrown" : (143,188,143),
+	"#sandybrown" : (164,244,96),
+	"#goldenrod" : (165,218,32),
+	"#darkgoldenrod" : (134,184,11),
+	"#peru" : (133,205,63),
+	"#chocolate" : (105,210,30),
+	"#saddlebrown" : (69,139,19),
+	"#sienna" : (82,160,45),
+	"#brown" : (42,165,42),
+	"#maroon" : (0,128,0),
+	"#darkolivegreen" : (107,85,47),
+	"#olive" : (128,128,0),
+	"#olivedrab" : (142,107,35),
+	"#yellowgreen" : (205,154,50),
+	"#limegreen" : (205,50,50),
+	"#lime" : (255,0,0),
+	"#lawngreen" : (252,124,0),
+	"#chartreuse" : (255,127,0),
+	"#greenyellow" : (255,173,47),
+	"#springgreen" : (255,0,127),
+	"#mediumspringgreen" : (250,0,154),
+	"#lightgreen" : (238,144,144),
+	"#palegreen" : (251,152,152),
+	"#darkseagreen" : (188,143,143),
+	"#mediumaquamarine" : (205,102,170),
+	"#mediumseagreen" : (179,60,113),
+	"#seagreen" : (139,46,87),
+	"#forestgreen" : (139,34,34),
+	"#green" : (128,0,0),
+	"#darkgreen" : (100,0,0),
+	"#aqua" : (255,0,255),
+	"#cyan" : (255,0,255),
+	"#lightcyan" : (255,224,255),
+	"#paleturquoise" : (238,175,238),
+	"#aquamarine" : (255,127,212),
+	"#turquoise" : (224,64,208),
+	"#mediumturquoise" : (209,72,204),
+	"#darkturquoise" : (206,0,209),
+	"#lightseagreen" : (178,32,170),
+	"#cadetblue" : (158,95,160),
+	"#darkcyan" : (139,0,139),
+	"#teal" : (128,0,128),
+	"#lightsteelblue" : (196,176,222),
+	"#powderblue" : (224,176,230),
+	"#lightblue" : (216,173,230),
+	"#skyblue" : (206,135,235),
+	"#lightskyblue" : (206,135,250),
+	"#deepskyblue" : (191,0,255),
+	"#dodgerblue" : (144,30,255),
+	"#cornflowerblue" : (149,100,237),
+	"#steelblue" : (130,70,180),
+	"#royalblue" : (105,65,225),
+	"#blue" : (0,0,255),
+	"#mediumblue" : (0,0,205),
+	"#darkblue" : (0,0,139),
+	"#navy" : (0,0,128),
+	"#midnightblue" : (25,25,112),
+	"#lavender" : (230,230,250),
+	"#thistle" : (191,216,216),
+	"#plum" : (160,221,221),
+	"#violet" : (130,238,238),
+	"#orchid" : (112,218,214),
+	"#fuchsia" : (0,255,255),
+	"#magenta" : (0,255,255),
+	"#mediumorchid" : (85,186,211),
+	"#mediumpurple" : (112,147,219),
+	"#blueviolet" : (43,138,226),
+	"#darkviolet" : (0,148,211),
+	"#darkorchid" : (50,153,204),
+	"#darkmagenta" : (0,139,139),
+	"#purple" : (0,128,128),
+	"#indigo" : (0,75,130),
+	"#darkslateblue" : (61,72,139),
+	"#rebeccapurple" : (51,102,153),
+	"#slateblue" : (90,106,205),
+	"#mediumslateblue" : (104,123,238),
+	"#white" : (255,255,255),
+	"#snow" : (250,255,250),
+	"#honeydew" : (255,240,240),
+	"#mintcream" : (255,245,250),
+	"#azure" : (255,240,255),
+	"#aliceblue" : (248,240,255),
+	"#ghostwhite" : (248,248,255),
+	"#whitesmoke" : (245,245,245),
+	"#seashell" : (245,255,238),
+	"#beige" : (245,245,220),
+	"#oldlace" : (245,253,230),
+	"#floralwhite" : (250,255,240),
+	"#ivory" : (255,255,240),
+	"#antiquewhite" : (235,250,215),
+	"#linen" : (240,250,230),
+	"#lavenderblush" : (240,255,245),
+	"#mistyrose" : (228,255,225),
+	"#gainsboro" : (220,220,220),
+	"#lightgrey" : (211,211,211),
+	"#silver" : (192,192,192),
+	"#darkgray" : (169,169,169),
+	"#gray" : (128,128,128),
+	"#dimgray" : (105,105,105),
+	"#lightslategray" : (136,119,153),
+	"#slategray" : (128,112,144),
+	"#darkslategray" : (79,47,79),
+	"#black" : (0,0,0)
+}
+
+LED_COUNT      = 28      # Number of LED pixels.
+LED_PIN        = 18      # GPIO pin connected to the pixels
+LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
+LED_DMA        = 5       # DMA channel to use for generating signal (try 5)
+LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
+LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
+
+strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS)
+
+config = yaml.safe_load(open("secrets.yaml"))
+
+auth = OAuthHandler(config['consumer_key'], config['consumer_secret'])
+auth.set_access_token(config['access_token'], config['access_token_secret'])
+
+class BBCRadioTreeListener(StreamListener):
+
+	def on_data(self, data):
+		global colours
+		tweet = json.loads(data)
+		tweet_text = tweet["text"]	
+		tweet_user = tweet["user"]["screen_name"]
+		tweet_id = tweet["id"]
+
+		print "tweet: [user: %(tweet_user)s tweet_id: %(tweet_id)s text: %(tweet_text)s]" % locals()
+
+		hashtags = extract_hash_tags(tweet_text.lower())
+
+		print "found hashtags %(hashtags)s" % locals()
+
+		if len(hashtags) > 0:
+			display_colours = match_colours(hashtags, colours)
+
+			if len(display_colours) >0:
+				print "rendering tweet id %(tweet_id)s" % locals()
+				multiColorWipe(strip, colours, display_colours)
+
+				image_url = "/home/pi/images/{0}.jpg".format(tweet_id)
+				print "creating image at %(image_url)s" % locals()
+				with picamera.PiCamera() as camera:
+					camera.resolution = (640, 480)
+					camera.exif_tags['IFD0.Artist'] = 'twitter.com/bbcradiotree'
+					camera.capture(image_url)
+
+				print "creating data to tweet..."
+				status = "Check me out for @%(tweet_user)s..." % locals()
+				filename = os.path.abspath(image_url)
+
+				print "tweeting update: %(status)s" % locals()
+				api = API(auth)
+				api.update_with_media(filename, status=status)
+
+				print "handled tweet_id %(tweet_id)s" % locals()
+
+			else:
+				print "no valid colours found in tweet_id %(tweet_id)s" % locals()
+
+		else:
+			print "ignored tweet_id %(tweet_id)s" % locals()
+
+		return True
+
+	def on_error(self, status):
+		print status
+
+def wheel(pos):
+  if pos < 85:
+		return Color(pos * 3, 255 - pos * 3, 0)
+  elif pos < 170:
+    pos -= 85
+    return Color(255 - pos * 3, 0, pos * 3)
+  else:
+    pos -= 170
+    return Color(0, pos * 3, 255 - pos * 3)
+
+def colorWipe(strip, colour, wait_ms=50):
+	for i in range(strip.numPixels()):
+		strip.setPixelColor(i, colour)
+		if interrupt(): 
+			return
+		strip.show()
+		time.sleep(wait_ms/1000.0)
+
+def multiColorWipe(strip, colours, display_colours, wait_ms=50):
+	current_colour = 0
+	max_colours = len(display_colours) - 1
+
+	for i in range(28):
+		if current_colour >= max_colours:
+			current_colour = 0
+		else:
+			current_colour += 1
+
+		display_colour = list(display_colours)[current_colour]
+
+		strip.setPixelColor(i, Color(display_colour[0], display_colour[1], display_colour[2]))
+			
+		if interrupt(): 
+			return
+
+		strip.show()
+		time.sleep(wait_ms/1000.0)
+
+def rainbowCycle(strip, wait_ms=20, iterations=5):
+  for j in range(256 * iterations):
+    for i in range(strip.numPixels()):
+      strip.setPixelColor(i, wheel(((i * 256 / strip.numPixels()) + j) & 255))
+    strip.show()
+    time.sleep(wait_ms/1000.0)
+
+def interrupt():
+		return False
+
+def extract_hash_tags(text):
+	return set([re.sub(r"#+", "#", k) for k in set([re.sub(r"(\W+)$", "", j, flags = re.UNICODE) for j in set([i for i in text.split() if i.startswith("#")])])])
+
+def match_colours(hashtags, colours):
+	keys = hashtags & set(colours.keys())
+
+	matched = set()
+
+	for key in keys:
+		c = colours.get(key)
+		matched.add(c)
+
+	return matched
+
+if __name__ == '__main__':
+	print "starting pixels..."
+	strip.begin()
+	start_colours = match_colours(extract_hash_tags("#red #orange #yellow #green #blue #indigo #violet"), colours)
+
+	print "displaying start colours..."
+	multiColorWipe(strip, colours, start_colours)
+
+	print "starting listener..."
+	listener = BBCRadioTreeListener()
+
+	print "starting stream..."
+	stream = Stream(auth, listener)
+
+	print "streaming..."
+	stream.filter(track=['@bbcradiotree'])
+	
