@@ -209,7 +209,9 @@ colours = {
 	"#lightslategray" : (136,119,153),
 	"#slategray" : (128,112,144),
 	"#darkslategray" : (79,47,79),
-	"#black" : (0,0,0)
+	"#black" : (0,0,0),
+	# Easter Eggs
+	"#iplayerpink" : (73,245,151),
 }
 
 LED_COUNT      = 28      # Number of LED pixels.
